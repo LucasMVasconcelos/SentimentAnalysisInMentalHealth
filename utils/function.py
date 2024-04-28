@@ -162,3 +162,56 @@ def processar_dataframe_float(df,categoriaA,categoriaB):
                                                         'inicio':primeiro_index})])
 
     return novo_dataframe
+
+def needleman_wunsch(seq1, seq2, match_score=1, mismatch_score=-1, gap_penalty=-1):
+    # Inicialização da matriz de pontuação
+    rows = len(seq1) + 1
+    cols = len(seq2) + 1
+    score_matrix = [[0] * cols for _ in range(rows)]
+
+    # Inicialização das primeiras linhas e colunas com penalidades de lacuna
+    for i in range(1, rows):
+        score_matrix[i][0] = i * gap_penalty
+    for j in range(1, cols):
+        score_matrix[0][j] = j * gap_penalty
+
+    # Preenchimento da matriz de pontuação
+    for i in range(1, rows):
+        for j in range(1, cols):
+            match = score_matrix[i - 1][j - 1] + (match_score if seq1[i - 1] == seq2[j - 1] else mismatch_score)
+            delete = score_matrix[i - 1][j] + gap_penalty
+            insert = score_matrix[i][j - 1] + gap_penalty
+            score_matrix[i][j] = max(match, delete, insert)
+
+    # Recuperação do escore do alinhamento ótimo
+    alignment_score = score_matrix[-1][-1]
+
+    # Recuperação do alinhamento
+    align1 = ''
+    align2 = ''
+    i, j = rows - 1, cols - 1
+    while i > 0 and j > 0:
+        if score_matrix[i][j] == score_matrix[i - 1][j - 1] + (match_score if seq1[i - 1] == seq2[j - 1] else mismatch_score):
+            align1 = seq1[i - 1] + align1
+            align2 = seq2[j - 1] + align2
+            i -= 1
+            j -= 1
+        elif score_matrix[i][j] == score_matrix[i - 1][j] + gap_penalty:
+            align1 = seq1[i - 1] + align1
+            align2 = '-' + align2
+            i -= 1
+        else:
+            align1 = '-' + align1
+            align2 = seq2[j - 1] + align2
+            j -= 1
+
+    while i > 0:
+        align1 = seq1[i - 1] + align1
+        align2 = '-' + align2
+        i -= 1
+    while j > 0:
+        align1 = '-' + align1
+        align2 = seq2[j - 1] + align2
+        j -= 1
+
+    return alignment_score, align1, align2
