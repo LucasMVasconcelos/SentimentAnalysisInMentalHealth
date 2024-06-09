@@ -120,6 +120,8 @@ def processar_dataframe(df,categoriaA,categoriaB):
 
     return novo_dataframe
 
+
+
 def processar_dataframe_float(df,categoriaA,categoriaB):
     novo_dataframe = pd.DataFrame(columns=['Categoria', 'Primeiro_valor_B', 'Ultimo_valor_B','Media_B','inicio'])
     categoria_anterior = None
@@ -160,8 +162,8 @@ def processar_dataframe_float(df,categoriaA,categoriaB):
                                                         'Ultimo_valor_B': [ultimo_valor_B], 
                                                         'Media_B': [media_B],
                                                         'inicio':primeiro_index})])
-
     return novo_dataframe
+
 
 def needleman_wunsch(seq1, seq2, match_score=1, mismatch_score=-1, gap_penalty=-1):
     # Inicialização da matriz de pontuação
@@ -183,8 +185,7 @@ def needleman_wunsch(seq1, seq2, match_score=1, mismatch_score=-1, gap_penalty=-
             insert = score_matrix[i][j - 1] + gap_penalty
             score_matrix[i][j] = max(match, delete, insert)
 
-    # Recuperação do escore do alinhamento ótimo
-    alignment_score = score_matrix[-1][-1]
+
 
     # Recuperação do alinhamento
     align1 = ''
@@ -215,3 +216,27 @@ def needleman_wunsch(seq1, seq2, match_score=1, mismatch_score=-1, gap_penalty=-
         j -= 1
 
     return alignment_score, align1, align2
+
+def needleman_wunsch_matriz(seq1, seq2, gap, substitution_matrix=None):
+    # Inicialização da matriz de pontuação
+    n = len(seq1)
+    m = len(seq2)
+    score_matrix = [[0 for j in range(m + 1)] for i in range(n + 1)]
+
+    # Inicialização da primeira linha e primeira coluna
+    for i in range(1, n + 1):
+        score_matrix[i][0] = i * gap
+    for j in range(1, m + 1):
+        score_matrix[0][j] = j * gap
+
+    # Preenchimento da matriz de pontuação
+    for i in range(1, n + 1):
+        for j in range(1, m + 1):
+            value=substitution_matrix.get((seq1[i - 1], seq2[j - 1]), -1)
+            match = score_matrix[i - 1][j - 1] + value
+            delete = score_matrix[i - 1][j] + gap
+            insert = score_matrix[i][j - 1] + gap
+            score_matrix[i][j] = max(match, delete, insert)
+    # Recuperação do escore do alinhamento ótimo
+    alignment_score = score_matrix[-1][-1]
+    return alignment_score,np.array(score_matrix).max()
